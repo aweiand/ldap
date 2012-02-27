@@ -1,0 +1,72 @@
+<?php
+//definições padrão para conexão no sistema
+
+ldap_set_option(NULL, LDAP_OPT_PROTOCOL_VERSION, 3);
+ldap_set_option(NULL, LDAP_OPT_REFERRALS,0);
+
+$server = "localhost";
+$dn = "dc=empresa,dc=com,dc=br";
+
+if($ds = ldap_connect($server))
+{ 
+    print "LDAP connected to:".$server."<br />"; 
+}
+else {
+    die("Could not connect to LDAP server.");
+}
+
+$uname = "cn=Manager,".$dn;
+$pw = "tux";
+
+//função para cadastro de pessoas
+ 
+if($ds)
+{
+    if(ldap_bind($ds, $uname, $pw))
+    {
+        print "Sucessfully logged in as:".$uname."<br />";
+
+            //Common Name / Last Name and FirstName
+            $adduserAD["cn"] = "Common Name";
+            $adduserAD["sn"] = "Last Name";
+            $adduserAD["givenName"] = "First Name" ;
+            $adduserAD["mail"] = "email@empresa.com.br";
+            $adduserAD["st"] = "RS";
+            $adduserAD["l"] = "Osório";
+            $adduserAD["mobile"] = "51.99999999";
+            $adduserAD["telephoneNumber"] = "51.99999999";
+	    //id do grupo
+            $adduserAD["gidNumber"] = "500";
+            $adduserAD["homeDirectory"] = "/usr/usuario";
+	    //id do usuario
+            $adduserAD["uidNumber"] = "3";
+            $adduserAD["o"] = "Empresa";
+
+            //nome de usuario e senha
+            $adduserAD["uid"] = "Login";
+            $adduserAD["userpassword"] = "{MD5}".base64_encode(pack("H*",md5("senha")));
+
+            //Classes de usuário
+            $adduserAD["objectclass"][0] = "person";
+            $adduserAD["objectclass"][1] = "inetOrgPerson";
+            $adduserAD["objectclass"][2] = "posixAccount";
+
+        // add data to directory
+            if(ldap_add($ds, "cn=Common Name,ou=People,dc=facos,dc=edu,dc=br", $adduserAD))
+                { 
+                print "Added User: ".$adduserAD['cn']."<br />"; 
+                }
+            else
+                {
+                print "Failed to add user: ".$adduserAD['cn']."<br />"; 
+                //echo var_dump($adduserAD)."<br />";
+                }
+            }
+    }
+} else
+    {
+    echo "erro de conexão do usuario<br />";
+    }
+
+?>
+

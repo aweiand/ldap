@@ -1,0 +1,67 @@
+#/etc/ldap/slapd.conf
+#versao de protocolo utilizado para conexao pelos clientes
+allow bind_v2
+
+# Definição de schemas e de objectClass (se for usar samba, instale o pacote samba-doc, procure pelo #arquivo samba.schema.gz e o descompacte no diretório de schemas do OpenLDAP).
+include         /etc/ldap/schema/core.schema
+include         /etc/ldap/schema/cosine.schema
+include         /etc/ldap/schema/nis.schema
+include         /etc/ldap/schema/inetorgperson.schema
+include         /etc/ldap/schema/openldap.schema
+include         /etc/ldap/schema/collective.schema
+include         /etc/ldap/schema/corba.schema
+include         /etc/ldap/schema/duaconf.schema
+include         /etc/ldap/schema/dyngroup.schema
+include         /etc/ldap/schema/java.schema
+include         /etc/ldap/schema/ppolicy.schema
+include         /etc/ldap/schema/misc.schema
+
+#arquivo de schema do CEAD feito sob medida...
+#include		/etc/ldap/ldapEx/cead.schema
+
+#arquivos de controle dos processos no servidor slapd
+pidfile /var/run/slapd/slapd.pid
+argsfile /var/run/slapd/slapd.args
+
+#modulos
+modulepath /usr/lib/ldap
+moduleload back_bdb
+
+#parametros especificos do tipo de base
+backend bdb
+
+#base de dados
+database bdb
+
+#estrutura do diretorio e administrador
+suffix "dc=empresa,dc=com,dc=br"
+rootdn "cn=Manager,dc=empresa,dc=com,dc=br"
+
+#senha tux
+rootpw {SSHA}4DHesblPHZZcJ3RrTQGp1GnrB4fbGMa/
+
+#local de armazenamento dos dados
+directory /var/lib/ldap
+
+# Opções de indexação para a base
+index   objectClass  eq
+index   cn,sn,givenName eq,sub,approx
+index   mail eq,sub
+ 
+# Salvar o tempo e data em que as entradas foram modificadas
+lastmod         on
+ 
+# Controle de acessos à base de dados
+access to dn.exact=""
+	by * read
+
+access to attrs=userPassword
+        by self write
+        by anonymous auth
+        by * none
+ 
+access to *
+        by * read
+
+#nivel de log
+loglevel 1024

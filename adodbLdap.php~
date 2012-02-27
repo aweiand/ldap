@@ -1,0 +1,63 @@
+<?php
+
+require('adodb/adodb.inc.php');
+
+/* Make sure to set this BEFORE calling Connect() */
+
+$LDAP_CONNECT_OPTIONS = Array(
+         Array ("OPTION_NAME"=>LDAP_OPT_DEREF, "OPTION_VALUE"=>2),
+         Array ("OPTION_NAME"=>LDAP_OPT_SIZELIMIT,"OPTION_VALUE"=>100),
+         Array ("OPTION_NAME"=>LDAP_OPT_TIMELIMIT,"OPTION_VALUE"=>30),
+         Array ("OPTION_NAME"=>LDAP_OPT_PROTOCOL_VERSION,"OPTION_VALUE"=>3),
+         Array ("OPTION_NAME"=>LDAP_OPT_ERROR_NUMBER,"OPTION_VALUE"=>13),
+         Array ("OPTION_NAME"=>LDAP_OPT_REFERRALS,"OPTION_VALUE"=>FALSE),
+         Array ("OPTION_NAME"=>LDAP_OPT_RESTART,"OPTION_VALUE"=>FALSE)
+);
+
+$host = '192.168.2.1';
+
+$ldapbase = 'ou=People,dc=empresa,dc=com,dc=br';
+
+$ldap = NewADOConnection( 'ldap' );
+
+$ldap->Connect( $host, $user_name='cn=Manager,dc=empresa,dc=com,dc=br', $password='tux', $ldapbase );
+//$ldap->debug=true;
+
+//Adicionei esta linha para se for necessário logar um usuário pode-se pesquisar no banco
+//$passwd = "{MD5}".base64_encode(pack("H*",md5($_POST["senha"])));
+$userName = &_POST["usuario"];
+
+echo "<pre>";
+
+//imprime os dados do servidor
+print_r( $ldap->ServerInfo() );
+
+
+$ldap->SetFetchMode(ADODB_FETCH_ASSOC);
+
+$filter="(|(cn=$userName*)(sn=$userName*)(givenname=$userName*)(uid=$userName*))";
+
+$rs = $ldap->Execute( $filter );
+if ($rs)
+         while ($arr = $rs->FetchRow()) {
+              print_r($arr);       
+         }
+
+$rs = $ldap->Execute( $filter );
+
+if ($rs) 
+         while (!$rs->EOF) {
+                 print_r($rs->fields);     
+                 $rs->MoveNext();
+         } 
+print_r( $ldap->GetArray( $filter ) );
+print_r( $ldap->GetRow( $filter ) );
+
+//Variável para debugar o código
+//$ldap->debug=true;          
+
+$ldap->Close();
+
+echo "</pre>";
+?>
+
